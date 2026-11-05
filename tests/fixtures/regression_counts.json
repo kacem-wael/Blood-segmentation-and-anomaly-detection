@@ -1,0 +1,37 @@
+{
+  "BloodImage_00014": {
+    "r": 51.4,
+    "RBC": 13,
+    "WBC": 1,
+    "Platelet": 1,
+    "RBC_with_clumps": 13
+  },
+  "BloodImage_00035": {
+    "r": 51.9,
+    "RBC": 10,
+    "WBC": 1,
+    "Platelet": 4,
+    "RBC_with_clumps": 13
+  },
+  "BloodImage_00053": {
+    "r": 52.3,
+    "RBC": 14,
+    "WBC": 1,
+    "Platelet": 2,
+    "RBC_with_clumps": 17
+  },
+  "BloodImage_00099": {
+    "r": 53.5,
+    "RBC": 16,
+    "WBC": 1,
+    "Platelet": 0,
+    "RBC_with_clumps": 16
+  },
+  "BloodImage_00152": {
+    "r": 45.7,
+    "RBC": 17,
+    "WBC": 1,
+    "Platelet": 0,
+    "RBC_with_clumps": 27
+  }
+}

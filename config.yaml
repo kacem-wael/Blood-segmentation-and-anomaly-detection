@@ -1,0 +1,128 @@
+# All project parameters (project.md, section 8.1).
+# Size parameters are in units of the RBC radius r (pixels), areas in units of pi*r^2.
+
+seed: 42
+
+paths:
+  data: data
+  raw: data/raw
+  bccd: data/raw/BCCD_Dataset
+  raabin: data/raw/raabin_wbc
+  all_idb: data/raw/all_idb
+  index: data/index
+  masks_manual: data/masks_manual
+  splits: data/splits.json
+  models: models
+  results: results
+
+datasets:
+  bccd_repo: https://github.com/Shenggan/BCCD_Dataset.git
+  raabin_kaggle: raabindata/raabin-wbc
+  all_idb_kaggle: sizlingdhairya1/all-idb-images
+
+splits:
+  manual_masks_trainval: 10
+  manual_masks_test: 8
+
+scale:
+  r_default: 50            # px, fallback when granulometry fails (BCCD RBC boxes ~100 px wide)
+  r_max_fraction: 0.25     # max opening radius = image short side * this (allows ~2x zoom on BCCD)
+  r_min: 5                 # px, spectrum below this is ignored (noise, thin rims of open RBC rings;
+                           # train/val: no loss at x1, gross failures at x0.5 6 -> 2)
+  weight: 1                # spectrum / rho^weight: 0 = area-weighted (WBCs dominate), 2 = count
+  sigma_log: 0.08          # smoothing width in log-radius (constant relative width: scale-free)
+  calibration: 1.24        # box radius / inscribed radius, fitted on train (scripts/check_scale.py)
+  normalize: true          # resample the image so that r = working_r before the morphology:
+  working_r: 50            # px; pixel-level constants (median 2 px, gradient 1 px) stay valid at any zoom
+  tolerance: 0.25          # no resampling while |r / working_r - 1| <= this
+
+preprocessing:
+  median_r: 2              # px
+  tophat_r: 2.5            # x r, must exceed a WBC radius
+  tophat_downsample: 4     # background closing computed at 1/4 resolution (speed)
+  tophat_relative: true    # (closing - image) / closing: also corrects multiplicative vignetting
+  purple_channel: lab_b    # lab_b (-b*) or hsv_s
+
+segmentation:
+  cell_threshold: otsu     # otsu (global) or local (adaptive, block local_block x r)
+  local_block: 4           # x r
+  purple_threshold: auto   # otsu (2 classes) | multiotsu (3 classes, top one kept) | auto:
+  purple_auto_cover: 0.5   #   multiotsu when the Otsu stain mask covers > this of the cells
+                           #   (BCCD median 0.11, Raabin-WBC 0.95: stained RBCs)
+  min_contrast: 0.05       # 99th pct of the top-hat below this = no cells (BCCD: >= 0.38)
+  purple_min_range: 8      # 1-99th pct range of -b* below this = no stain (BCCD: >= 53)
+  gap_close_r: 0.1         # x r, closing before the hole fill (seals open RBC rims); 0 = off
+  gap_close_keep: false    # keep the closing bridges (true) or only the holes it sealed (false)
+  hole_fill: shape         # shape (small round convex holes) | plain (all holes) | none
+  hole_max_area: 0.5       # x pi r^2
+  hole_min_circularity: 0.6  # 4 pi A / P^2, Crofton perimeter
+  hole_min_solidity: 0.9   # area / convex hull: gaps between touching cells <= 0.8
+  hole_always_fill: 0.005  # x pi r^2, tiny holes are noise
+  open_r: 0.1              # x r
+  close_r: 0.05            # x r
+  min_area: 0.02           # x pi r^2
+  # Purple mask: its own, finer cleaning. Stained platelet cores are only ~50-300 px
+  # (0.005-0.04 pi r^2): the cell-mask opening (0.1 r) and min_area removed 60 % of them.
+  purple_open_r: 0.03      # x r (>= 1 px)
+  purple_close_r: 0.03     # x r (>= 1 px)
+  purple_min_area: 0.005   # x pi r^2
+
+wbc:
+  nucleus_min_area: 0.3    # x pi r^2
+  lobe_close_r: 0.15       # x r, closing that groups the lobes of one nucleus
+  search: 1.0              # x r, max cytoplasm distance from the nucleus
+  background_level: 0.5    # sure background = top-hat < this x Otsu threshold (1 = whole non-cell area)
+  marker_grow_px: 3        # px, nucleus markers grown past the nucleus edge ridge (gradient SE = 1 px)
+  rbc_seed_dist: 1.0       # x r, RBC competitor markers: at least this far from the nucleus
+  rbc_seed_depth: 0.5      # x r, ... and this deep inside the cell mask (RBC centres)
+  min_cytoplasm: 0.1       # cytoplasm < 10 % of the cell -> nc_ratio NaN, cytoplasm_uncertain
+
+platelets:
+  area_min: 0.005          # x pi r^2 (stained core; the box is larger)
+  area_max: 0.3            # x pi r^2
+  group_r: 0.1             # x r, closing that groups the granules of one platelet
+  ring_in: 0.08            # x r, enclosure ring around a candidate: inner radius ...
+  ring_out: 0.18           # x r, ... outer radius
+  max_enclosed: 0.4        # ring share in non-purple cell pixels above which a speck is inside an RBC
+  box_pad: 0.2             # x r, evaluation only: BCCD platelet boxes include the pale halo
+                           # around the stained core (core dilated by 0.2 r: IoU >= 0.5 for 94 %)
+
+separation:
+  markers: hmaxima         # hmaxima | peaks | ultimate (ultimate erosion)
+  platelet_dilate: 2       # px, platelets are removed dilated from the RBC mask (no notch)
+  dist_sigma: 0.05         # x r
+  h: 0.15                  # x r (train/val sweep: best RBC F1 and recall at IoU 0.5)
+  min_distance: 0.7        # x r (alternative to h-maxima)
+  min_fragment_area: 0.1   # x pi r^2
+
+contours:
+  gradient_r: 1            # px
+
+# Stage switches for the ablation study (project.md 10.2); all on for the real pipeline.
+pipeline:
+  preprocessing: true      # median + relative top-hat (off: raw inverted green, raw -b*)
+  morphology: true         # opening, closing, small-object removal (hole fill: segmentation.hole_fill)
+  wbc_first: true          # WBC gradient watershed + platelets removed before the RBC watershed
+  watershed: true          # distance + markers + watershed (off: connected components)
+
+features:
+  iou_match: 0.5           # training labels: Hungarian matching of object and BCCD boxes
+  iou_fallback: 0.2        # then: centroid inside a free box and IoU >= this
+
+classifier:
+  method: ml               # branch | rules | ml (ml falls back to branch without a model file)
+  model_file: models/classifier.joblib
+  override_min_proba: 0.8  # ML changes the branch class only when this confident (val end-to-end)
+  cv_folds: 5              # GroupKFold on BCCD field groups
+  rules:                   # rule baseline (Phase 8): stained & large = WBC, stained & small = platelet
+    purple_min: 0.2        # purple_fraction
+    wbc_min_area: 1.0      # x pi r^2
+    platelet_max_area: 0.3 # x pi r^2
+
+anomaly:
+  clump_min_area: 2.0      # x pi r^2: RBC objects above this with low solidity are clumps
+  clump_max_solidity: 0.9
+  min_solidity: 0.9        # eligible RBCs only (border, clumps and fragments excluded)
+  min_area: 0.2            # x pi r^2
+  min_cells: 8             # robust z-scores need enough eligible RBCs
+  z_max: 3.0               # |robust z| above this = flagged

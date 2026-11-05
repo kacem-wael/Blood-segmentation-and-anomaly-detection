@@ -1,0 +1,18 @@
+# Pinned versions (Python 3.11). Install the package itself with: pip install -e .
+numpy==2.4.6
+scipy==1.17.1
+scikit-image==0.26.0
+opencv-python-headless==5.0.0.93   # headless: no libGL needed (CI, Streamlit Cloud)
+pandas==3.0.6
+scikit-learn==1.9.1
+matplotlib==3.11.2
+PyYAML==6.0.3
+joblib==1.6.0
+kaggle==2.2.4
+
+# Development
+pytest==9.1.1
+jupyter==1.1.1
+jupytext==1.19.6
+black==26.10.1
+flake8==7.4.1

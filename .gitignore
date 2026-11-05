@@ -1,0 +1,53 @@
+# Data: never committed (see scripts/download_data.py)
+data/*
+# ...except what both annotators need: the split definition and the manual masks (+ drafts)
+!data/splits.json
+!data/masks_manual/
+
+# Environments and caches
+.venv/
+.venv-labelme/
+.venv-labelme/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Per-step pipeline images (scripts/export_steps.py, regenerated with `make outputs`)
+outputs/
+
+# Generated results (figures/tables worth keeping are added explicitly)
+results/**/*.png
+results/**/*.csv
+
+# Office lock files
+~$*
+
+# Secrets
+kaggle.json
+
+# Report figures and summary tables that are versioned on purpose
+!results/figures/pipeline/*.png
+!results/figures/classification/*.png
+!results/figures/evaluation/*.png
+!results/tables/eval_val_summary.csv
+!results/tables/eval_val_ablation.csv
+!results/tables/classification_*.csv
+!results/figures/exploration/*.png
+!results/figures/preprocessing/*.png
+!results/tables/eval_test_summary.csv
+!results/tables/eval_test_ablation.csv
+!results/tables/eval_*_classifiers.csv
+!results/tables/eval_*_sweeps.csv
+!results/tables/eval_*_scale_robustness.csv
+!results/tables/scale_check.csv
+!results/tables/scale_zoom.csv
+!results/tables/raabin_detection_summary.csv
+!results/tables/typical_sizes.csv
+!results/tables/channel_separability.csv
+!results/tables/feature_importance.csv
+
+
+# Raw run logs (warnings, progress)
+results/tables/log_*.txt

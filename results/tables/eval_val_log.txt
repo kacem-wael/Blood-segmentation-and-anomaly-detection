@@ -1,0 +1,75 @@
+22 configurations x 78 val images ...
+Detection (full pipeline):
+     cls  P@0.5  R@0.5  F1@0.5  P@0.3  R@0.3  F1@0.3  count_mae  pred/gt  s/img
+     RBC  0.411  0.604   0.489  0.518  0.761   0.617      6.716    1.468  4.775
+     WBC  0.987  0.987   0.987  1.000  1.000   1.000      0.000    1.000  4.893
+Platelet  0.625  0.733   0.675  0.636  0.747   0.687      0.577    1.173  4.893
+Runtime: 1.72 s / image (single process, 5 images)
+Classification of matched objects:
+     cls  precision  recall    f1  support classifier       macro_ci
+     RBC      0.997   1.000 0.999      667     branch               
+     WBC      1.000   1.000 1.000       79     branch               
+Platelet      1.000   0.966 0.982       58     branch               
+   macro      0.999   0.989 0.994      804     branch [0.983, 1.000]
+     RBC      0.999   1.000 0.999      667      final               
+     WBC      1.000   1.000 1.000       79      final               
+Platelet      1.000   0.983 0.991       58      final               
+   macro      1.000   0.994 0.997      804      final [0.989, 1.000]
+No manual masks for this split: Dice / IoU not computed (data/masks_manual/<id>.json).
+Ablation (classes from the pipeline branch):
+                 config  preprocessing hole_fill  morphology  wbc_first  watershed  RBC count MAE  RBC pred/gt  RBC R@0.5  RBC F1@0.5  WBC F1@0.5  Platelet F1@0.5  mean F1@0.5  s/img
+    A Otsu + components          False      none       False      False      False         45.203        4.921      0.336       0.114       0.570            0.646        0.443  2.947
+      B + preprocessing           True      none       False      False      False         20.973        2.805      0.363       0.191       0.582            0.655        0.476  2.860
+    C + shape hole fill           True     shape       False      False      False         20.095        2.729      0.349       0.187       0.544            0.659        0.463  3.094
+    D + opening/closing           True     shape        True      False      False          4.135        1.033      0.341       0.336       0.544            0.659        0.513  3.779
+          E + watershed           True     shape        True      False       True          7.122        1.524      0.607       0.481       0.924            0.659        0.688  4.561
+   F full (+ WBC first)           True     shape        True       True       True          6.743        1.470      0.604       0.489       0.987            0.671        0.716  5.352
+F with plain fill_holes           True     plain        True       True       True          6.432        1.427      0.580       0.478       0.987            0.675        0.714  5.136
+End-to-end detection per classifier:
+              variant      cls  P@0.5  R@0.5  F1@0.5  pred/gt
+cls ml (gated, final)      RBC  0.411  0.604   0.489    1.468
+cls ml (gated, final)      WBC  0.987  0.987   0.987    1.000
+cls ml (gated, final) Platelet  0.625  0.733   0.675    1.173
+           cls branch      RBC  0.411  0.604   0.489    1.470
+           cls branch      WBC  0.987  0.987   0.987    1.000
+           cls branch Platelet  0.628  0.720   0.671    1.147
+            cls rules      RBC  0.408  0.604   0.487    1.478
+            cls rules      WBC  0.986  0.899   0.940    0.911
+            cls rules Platelet  0.628  0.720   0.671    1.147
+     cls ml (no gate)      RBC  0.413  0.604   0.490    1.463
+     cls ml (no gate)      WBC  0.987  0.987   0.987    1.000
+     cls ml (no gate) Platelet  0.591  0.733   0.655    1.240
+Sweeps:
+ param  value  RBC R@0.5  RBC F1@0.5  RBC pred/gt  Platelet F1@0.5  WBC F1@0.5
+open_r   0.05      0.613       0.495        1.478            0.671       0.987
+open_r   0.10      0.604       0.489        1.470            0.671       0.987
+open_r   0.15      0.593       0.479        1.478            0.667       0.987
+open_r   0.20      0.555       0.451        1.460            0.667       0.987
+open_r   0.30      0.413       0.350        1.358            0.619       0.987
+     h   0.05      0.678       0.480        1.821            0.671       0.987
+     h   0.10      0.638       0.488        1.613            0.671       0.987
+     h   0.15      0.604       0.489        1.470            0.671       0.987
+     h   0.20      0.558       0.469        1.380            0.671       0.987
+     h   0.30      0.498       0.439        1.270            0.671       0.987
+     h   0.50      0.414       0.385        1.151            0.671       0.987
+Scale robustness on 20 images ...
+        mode  factor      cls  median r  R@0.5  F1@0.5  pred/gt
+ estimated r     0.5      RBC    26.660  0.643   0.540    1.379
+ estimated r     0.5      WBC    26.660  1.000   1.000    1.000
+ estimated r     0.5 Platelet    26.660  0.840   0.764    1.200
+fixed pixels     0.5      RBC    50.000  0.482   0.517    0.866
+fixed pixels     0.5      WBC    50.000  0.800   0.889    0.800
+fixed pixels     0.5 Platelet    50.000  0.480   0.490    0.960
+ estimated r     1.0      RBC    52.685  0.647   0.540    1.397
+ estimated r     1.0      WBC    52.685  1.000   1.000    1.000
+ estimated r     1.0 Platelet    52.685  0.880   0.815    1.160
+fixed pixels     1.0      RBC    50.000  0.683   0.541    1.527
+fixed pixels     1.0      WBC    50.000  1.000   1.000    1.000
+fixed pixels     1.0 Platelet    50.000  0.880   0.786    1.240
+ estimated r     2.0      RBC   105.223  0.647   0.546    1.371
+ estimated r     2.0      WBC   105.223  1.000   1.000    1.000
+ estimated r     2.0 Platelet   105.223  0.880   0.800    1.200
+fixed pixels     2.0      RBC    50.000  0.661   0.419    2.156
+fixed pixels     2.0      WBC    50.000  0.950   0.864    1.200
+fixed pixels     2.0 Platelet    50.000  0.320   0.302    1.120
+Tables: C:\Users\MSI\Desktop\ENSI\3eme ENSI\DS-CV\morphologie mathématique et application médicale\projet\results\tables\eval_val_*.csv   Figures: C:\Users\MSI\Desktop\ENSI\3eme ENSI\DS-CV\morphologie mathématique et application médicale\projet\results\figures\evaluation
