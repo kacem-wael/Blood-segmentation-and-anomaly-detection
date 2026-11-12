@@ -28,37 +28,48 @@ Full specification: [project.md](project.md).
 
 ## Results
 
-Official BCCD split with same-field leakage removed (train 209 / val 78 / **test 72**, test set
-evaluated once, after all tuning on train/val). Detection = one-to-one box matching at IoU ≥ 0.5.
+Official BCCD split with same-field leakage removed (train 209 / val 78 / **test 72**); every
+parameter chosen on train/val, frozen before each test run. **Detection** = one-to-one box
+matching with the BCCD boxes at IoU ≥ 0.5:
 
 | Class | Val P / R / F1 | **Test P / R / F1** | Test count MAE / image |
 | ----- | -------------- | ------------------- | ---------------------- |
-| WBC | 0.99 / 0.99 / 0.99 | **0.83 / 0.97 / 0.90** | 0.17 |
-| Platelet | 0.63 / 0.73 / 0.68 | **0.63 / 0.67 / 0.65** | 0.53 |
+| WBC | 0.99 / 0.99 / 0.99 | **0.83* / 0.97 / 0.90** | 0.17 |
+| Platelet | 0.63 / 0.73 / 0.68 | **0.64 / 0.67 / 0.65** | 0.51 |
 | RBC | 0.41* / 0.60 / 0.49 | **0.38* / 0.59 / 0.47** | 7.5* |
 
-\* BCCD leaves ~30 % of the RBCs without a box: RBC precision and count error are measured
-against an incomplete reference (lower bound / upper bound); RBC recall is not affected
-(0.76 at IoU ≥ 0.3).
+\* lower bounds: BCCD leaves most RBCs (and a few WBCs) without a box. RBC recall at IoU ≥ 0.3: 0.76.
 
-| Ablation (test, RBC recall@0.5 / WBC F1@0.5) | |
-| --- | --- |
-| A Otsu + connected components | 0.37 / 0.61 (RBC count ×5.3) |
-| D + top-hat, shape hole fill, opening/closing | 0.39 / 0.68 |
-| E + distance transform + watershed | 0.59 / 0.83 |
-| F + WBC segmented first (full) | 0.59 / 0.90 |
+**Pixel level**, on the 18 hand-annotated images (every cell drawn; 8 test images):
+
+| | Dice | IoU | Cell precision | Cell recall | Cell F1 | Cell Dice |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Test (8 images)** | **0.883** | 0.792 | **0.787** | 0.575 | 0.662 | 0.861 |
+| Val (3 images) | 0.913 | 0.841 | 0.694 | 0.405 | 0.511 | 0.863 |
+
+Cells are matched one-to-one at mask IoU ≥ 0.5. The true precision (0.79) is twice the box
+lower bound; recall is the weak point (touching RBCs left in clumps, pale or border-cut cells).
+
+| Ablation (test) | RBC recall@0.5 | WBC F1 | Pixel Dice | Cell F1 |
+| --- | --- | --- | --- | --- |
+| A Otsu + connected components | 0.37 (count ×5.3) | 0.61 | 0.835 | 0.237 |
+| B + top-hat preprocessing | 0.40 | 0.67 | 0.852 | 0.387 |
+| C + shape-filtered hole fill | 0.39 | 0.67 | **0.892** | 0.415 |
+| D + opening / closing | 0.39 | 0.68 | 0.886 | 0.505 |
+| E + distance transform + watershed | **0.59** | 0.83 | 0.886 | **0.662** |
+| F + WBC segmented first (full) | 0.59 | **0.90** | 0.883 | 0.662 |
 
 - **Classification** of the detected objects (random forest, gated by the pipeline branch):
-  macro-F1 0.989 [95 % CI 0.970, 1.000] on test (rule baseline 0.976 on val).
+  macro-F1 0.989 [95 % CI 0.970, 1.000] on test (rule baseline 0.977 on val).
 - **Scale**: granulometric `r` within 15 % of the box radius on 91 % of val images; zoom ×0.5 /
   ×2: r follows the zoom (median ratio 1.00), RBC F1 0.54 at ×0.5, ×1 and ×2 on val
   (fixed-pixel parameters: 0.42 at ×2).
 - **Other microscope / stain** (Raabin-WBC, 720 crops): the WBC at the crop centre is found in 90 %.
-- **Runtime**: 1.6 s per 640×480 image on a laptop CPU.
+- **Runtime**: 1.6 s per 640×480 image on an idle laptop CPU (up to ~5 s when the machine is loaded).
 
 Full tables: `results/tables/eval_{val,test}_*`; logs: `results/tables/eval_*_log.txt`.
-Pixel Dice / IoU will be added once the manual masks exist (see `docs/manual_tasks.md`).
-Report draft: [docs/report/report.md](docs/report/report.md); slides: [docs/slides/slides.md](docs/slides/slides.md).
+Full project report (PDF): [docs/report/project_report.pdf](docs/report/project_report.pdf);
+course report draft: [docs/report/report.md](docs/report/report.md); slides: [docs/slides/slides.md](docs/slides/slides.md).
 
 ## Install
 
@@ -131,9 +142,9 @@ tests/                 pytest (synthetic images with known ground truth)
 
 ## Limitations
 
-- BCCD has boxes, not masks, and misses many RBC (and some WBC) boxes: precision and count
-  errors are measured against an incomplete reference. Pixel Dice needs the 18 manual masks;
-  drafts and tools are ready (`python scripts/annotate.py next`, see `docs/manual_tasks.md`).
+- BCCD has boxes, not masks, and misses many RBC (and some WBC) boxes: box precision and count
+  errors are lower / upper bounds. Pixel metrics come from 18 hand-annotated images only.
+- Per-cell recall is ≈ 0.58 on the manual masks: heavily touching RBCs often stay in one clump.
 - The granulometric scale fails on ~5 % of the images (ring-shaped RBCs, sparse fields).
 - Heavily overlapping RBCs are sometimes left as a clump (flagged, counted by area).
 - One stain / microscope (BCCD); other stains may need a different purple channel.

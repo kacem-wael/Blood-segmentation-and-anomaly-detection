@@ -31,6 +31,8 @@ BRANCHES = ("RBC", "WBC", "Platelet")
 
 @dataclass
 class Analysis:
+    """All morphological results of one image (working resolution)."""
+
     r: float
     seg: Segmentation
     wbc: WbcResult
@@ -90,6 +92,7 @@ def combine(wbc: np.ndarray, platelets: np.ndarray, rbc: np.ndarray) -> tuple[np
 
 
 def relabel_with_branch(labels: np.ndarray, branch: dict[int, str]) -> tuple[np.ndarray, dict[int, str]]:
+    """Consecutive labels 1..n and the matching label -> branch dictionary."""
     present = np.unique(labels[labels > 0])
     lut = np.zeros(int(labels.max()) + 1, np.int32)
     lut[present] = np.arange(1, len(present) + 1)
@@ -207,6 +210,7 @@ def working_factor(r: float, cfg: dict) -> float:
 
 
 def _resize(x: np.ndarray, shape: tuple[int, int], order: int) -> np.ndarray:
+    """Resize to ``shape``: nearest neighbour (order 0, labels / masks) or bilinear."""
     out = transform.resize(x, shape, order=order, preserve_range=True, anti_aliasing=False, mode="edge")
     return out.astype(x.dtype) if order == 0 else out
 

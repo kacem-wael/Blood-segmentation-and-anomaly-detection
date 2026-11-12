@@ -42,6 +42,8 @@ class Box:
 
 @dataclass
 class VocAnnotation:
+    """Parsed VOC file: image size, valid boxes and the list of rejected ones."""
+
     filename: str
     width: int
     height: int
@@ -167,6 +169,8 @@ NUCLEUS_LABELS = {"nucleus", "wbc_nucleus", "noyau"}
 
 @dataclass
 class ManualMask:
+    """Rasterized manual annotation: cell label map, class per label, nucleus mask."""
+
     labels: np.ndarray  # one integer per annotated cell, 0 = background
     classes: dict[int, str]  # label -> RBC / WBC / Platelet
     nuclei: np.ndarray  # boolean mask of the WBC nucleus polygons

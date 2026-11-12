@@ -60,6 +60,8 @@ def find_nuclei(purple_mask: np.ndarray, r: float, cfg: dict) -> np.ndarray:
 
 @dataclass
 class WbcResult:
+    """WBC branch result: nuclei, whole cells, gradient relief and watershed markers."""
+
     nuclei: np.ndarray  # label map, one label per WBC
     cells: np.ndarray  # label map of whole WBCs (nucleus + cytoplasm), same labels
     gradient: np.ndarray  # gradient image the watershed flooded

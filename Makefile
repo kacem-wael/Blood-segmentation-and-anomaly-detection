@@ -17,7 +17,7 @@ NB_RUN = $(BIN)/jupyter nbconvert --to notebook --execute --inplace --ExecutePre
 
 .DEFAULT_GOAL := help
 .PHONY: help setup venv install data download download-bccd download-raabin download-allidb \
-        index audit-extra splits explore scale-check phase3 outputs eval-seg eval-detection phase4 \n        features train evaluate ablation evaluate-test raabin regression prepare-masks annotate check-masks with-masks run pipeline-nb notebooks lab test lint format check clean
+        index audit-extra splits explore scale-check phase3 outputs eval-seg eval-detection phase4 \n        features train evaluate ablation evaluate-test raabin regression prepare-masks annotate check-masks with-masks run demo pipeline-nb notebooks lab test lint format check clean
 
 help: ## List the available commands
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "  make %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -124,6 +124,9 @@ regression: ## Refresh the regression fixture after an intended change
 
 run: ## Analyse an image or folder: make run IN=path [OUT=dir]
 	$(PY) scripts/run_pipeline.py "$(IN)" $(if $(OUT),--out "$(OUT)")
+
+demo: ## Live demo: the 40 steps of one image, saved one by one to demo/ (IMG=id|path AUTO=seconds)
+	$(PY) scripts/demo.py $(if $(IMG),--image "$(IMG)") $(if $(AUTO),--auto $(AUTO))
 
 
 ## ---- Notebooks / quality ---------------------------------------------

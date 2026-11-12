@@ -163,20 +163,41 @@ def run_variants(data, ids, cfg, variants, model, jobs, keep_objects=()) -> dict
     return out
 
 
-def classification_report(objects: pd.DataFrame, data, cfg) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Classification of the detected objects that have a ground-truth class."""
+def classification_report(objects: pd.DataFrame, data, cfg, model=None) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Classification of the detected objects that have a ground-truth class.
+
+    The macro-F1 (and its bootstrap CI over images) is computed over the classes
+    the model can predict: a class it never learned (Artefact, too few training
+    examples) would score 0 by construction and only lower the average. Objects
+    of such classes are still reported, as a separate row "<class> (not learned)".
+    """
+    learned = list(model["classes"]) if model is not None else ["RBC", "WBC", "Platelet"]
     known = objects[objects["gt"].isin(["RBC", "WBC", "Platelet", "Artefact"])]
-    classes = [c for c in ("RBC", "WBC", "Platelet", "Artefact") if (known["gt"] == c).any()]
-    groups = known["image_id"].map(data.group_of)
+    scored = known[known["gt"].isin(learned)]
+    classes = [
+        c for c in ("RBC", "WBC", "Platelet", "Artefact") if c in learned and (scored["gt"] == c).any()
+    ]
+    groups = scored["image_id"].map(data.group_of)
     rows = []
-    for name, pred in (("branch", known["branch"]), ("final", known["cls"])):
-        rep = per_class_report(known["gt"], pred, classes)
-        lo, hi = bootstrap_ci(known["gt"], pred, groups, classes, n_boot=1000, seed=cfg["seed"])
+    for name, col in (("branch", "branch"), ("final", "cls")):
+        rep = per_class_report(scored["gt"], scored[col], classes)
+        lo, hi = bootstrap_ci(scored["gt"], scored[col], groups, classes, n_boot=1000, seed=cfg["seed"])
         rep["classifier"] = name
         rep["macro_ci"] = ""
         rep.loc[rep["cls"] == "macro", "macro_ci"] = f"[{lo:.3f}, {hi:.3f}]"
+        for c in sorted(set(known["gt"]) - set(learned)):
+            sub = known[known["gt"] == c]
+            note = ", ".join(f"{k} {v}" for k, v in sub[col].value_counts().items())
+            extra = {
+                "cls": f"{c} (not learned)",
+                "support": len(sub),
+                "classifier": name,
+                "macro_ci": f"predicted as: {note}",
+            }
+            rep = pd.concat([rep, pd.DataFrame([extra])], ignore_index=True)
         rows.append(rep)
-    return pd.concat(rows, ignore_index=True), confusion(known["gt"], known["cls"], classes)
+    all_classes = classes + sorted(set(known["gt"]) - set(classes))
+    return pd.concat(rows, ignore_index=True), confusion(known["gt"], known["cls"], all_classes)
 
 
 def ablation_table(det: pd.DataFrame, masks: pd.DataFrame, cfg) -> pd.DataFrame:
@@ -347,7 +368,7 @@ def main() -> None:
     per_image = (time.perf_counter() - t0) / len(t_ids)
     print(f"Runtime: {per_image:.2f} s / image (single process, {len(t_ids)} images)")
 
-    report, cm = classification_report(objects, data, cfg)
+    report, cm = classification_report(objects, data, cfg, model)
     report.to_csv(tables / f"{tag}_classification.csv", index=False)
     cm.to_csv(tables / f"{tag}_confusion.csv")
     print("\nClassification of matched objects:")

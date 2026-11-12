@@ -1,0 +1,11 @@
+cls,precision,recall,f1,support,classifier,macro_ci
+RBC,0.998546511627907,1.0,0.9992727272727273,687,branch,
+WBC,0.9726027397260274,1.0,0.9861111111111112,71,branch,
+Platelet,1.0,0.94,0.9690721649484536,50,branch,
+macro,0.9903830837846449,0.98,0.9848186677774308,808,branch,"[0.964, 1.000]"
+Artefact (not learned),,,,9,branch,predicted as: RBC 9
+RBC,1.0,1.0,1.0,687,final,
+WBC,0.9726027397260274,1.0,0.9861111111111112,71,final,
+Platelet,1.0,0.96,0.9795918367346939,50,final,
+macro,0.9908675799086758,0.9866666666666667,0.988567649281935,808,final,"[0.970, 1.000]"
+Artefact (not learned),,,,9,final,predicted as: RBC 9

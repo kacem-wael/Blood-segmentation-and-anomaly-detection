@@ -1,0 +1,5 @@
+truth,RBC,WBC,Platelet,Artefact
+RBC,687,0,0,0
+WBC,0,79,0,0
+Platelet,1,0,58,0
+Artefact,2,0,0,0

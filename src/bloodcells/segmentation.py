@@ -222,6 +222,8 @@ STEPS: list[tuple[str, str]] = [
 
 @dataclass
 class Segmentation:
+    """Masks and every intermediate image of the segmentation of one image."""
+
     r: float
     scale: ScaleEstimate | None  # None when r was given
     channels: dict[str, np.ndarray]  # preprocess output (green, cells, purple + intermediates)

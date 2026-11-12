@@ -22,6 +22,8 @@ MARKERS = ("hmaxima", "peaks", "ultimate")
 
 @dataclass
 class Separation:
+    """Result of the RBC watershed: labels, distance, markers, orphan / merge counts."""
+
     labels: np.ndarray  # one integer per RBC, 0 = background
     distance: np.ndarray  # smoothed distance transform of the RBC mask
     markers: np.ndarray  # labelled markers the watershed was flooded from

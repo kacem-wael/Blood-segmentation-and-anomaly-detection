@@ -96,6 +96,7 @@ def class_overlay(
 
 
 def _draw_ids(img: np.ndarray, labels: np.ndarray) -> np.ndarray:
+    """Write each label number at its object's centroid (OpenCV text)."""
     import cv2
 
     out = np.ascontiguousarray(img)
@@ -130,5 +131,6 @@ def spectrum_figure(scale, r_ref: float | None = None, title: str = "") -> Figur
 
 
 def save_image(path: Path, x: np.ndarray) -> None:
+    """Save any step output as an 8-bit PNG (parent folders created)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     io.imsave(path, to_uint8(x), check_contrast=False)

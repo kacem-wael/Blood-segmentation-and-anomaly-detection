@@ -132,3 +132,13 @@ def test_only_reviewed_labelme_files_are_ground_truth(tmp_path):
     boxes = pd.DataFrame(columns=["image_id", "cls", "xmin", "ymin", "xmax", "ymax"])
     data = Bccd(images, boxes, {}, tmp_path)
     assert data.manual_masks() == ["BloodImage_00002", "BloodImage_00003"]
+
+
+@pytest.mark.parametrize("name", ["logreg", "svm", "random_forest"])
+def test_every_model_supports_the_confidence_gate(name):
+    """Without predict_proba, ml_predict would silently fall back to an ungated override."""
+    f = toy_features(n_per_class=15)
+    model = fit(make_models(CFG["seed"])[name], f)
+    assert hasattr(model, "predict_proba")
+    proba = model.predict_proba(f[ML_FEATURES].to_numpy(float))
+    assert proba.shape == (len(f), 3) and np.allclose(proba.sum(axis=1), 1)

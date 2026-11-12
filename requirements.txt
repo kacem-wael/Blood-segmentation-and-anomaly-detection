@@ -14,5 +14,6 @@ kaggle==2.2.4
 pytest==9.1.1
 jupyter==1.1.1
 jupytext==1.19.6
+reportlab==5.1.0          # docs/report/build_full_report.py (PDF report)
 black==26.10.1
 flake8==7.4.1

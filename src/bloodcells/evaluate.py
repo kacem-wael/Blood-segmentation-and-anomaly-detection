@@ -19,6 +19,7 @@ def dice(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def _centres(boxes: pd.DataFrame, shape: tuple[int, int]) -> tuple[np.ndarray, np.ndarray]:
+    """Integer (row, col) centres of VOC boxes, clipped to the image."""
     cy = ((boxes["ymin"] + boxes["ymax"]) // 2).clip(0, shape[0] - 1).to_numpy(int)
     cx = ((boxes["xmin"] + boxes["xmax"]) // 2).clip(0, shape[1] - 1).to_numpy(int)
     return cy, cx
@@ -181,6 +182,7 @@ def per_class_report(y_true, y_pred, classes) -> pd.DataFrame:
 
 
 def macro_f1(y_true, y_pred, classes) -> float:
+    """Macro-averaged F1 over the classes present in the ground truth."""
     return float(per_class_report(y_true, y_pred, classes).iloc[-1]["f1"])
 
 

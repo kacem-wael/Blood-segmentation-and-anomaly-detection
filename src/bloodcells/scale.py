@@ -79,6 +79,8 @@ def smooth_spectrum(
 
 @dataclass
 class ScaleEstimate:
+    """Result of the granulometry: r, raw and smoothed spectra, coarse mask."""
+
     r: float  # estimated RBC radius in pixels (calibrated to the box radius)
     ok: bool  # False when the default radius was used
     r_inscribed: float  # raw spectrum peak: inscribed-disk radius, before calibration

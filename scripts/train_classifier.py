@@ -134,6 +134,20 @@ def main() -> None:
 
     train, val = load(cfg, "train"), load(cfg, "val")
     both = pd.concat([train, val], ignore_index=True)
+    # A class needs enough examples to be learned and scored: with a handful of
+    # objects (Artefact: only the unmatched objects of the manual-mask images) it
+    # would only add noise, and a macro-F1 over it would decide the model choice.
+    counts = both["gt"].value_counts()
+    min_n = cfg["classifier"]["min_class_examples"]
+    rare = [c for c in counts.index if counts[c] < min_n]
+    if rare:
+        print(
+            f"Classes with fewer than {min_n} examples, not learned: "
+            + ", ".join(f"{c} ({counts[c]})" for c in rare)
+        )
+        train, val = train[~train["gt"].isin(rare)], val[~val["gt"].isin(rare)]
+        both = both[~both["gt"].isin(rare)].reset_index(drop=True)
+        train, val = train.reset_index(drop=True), val.reset_index(drop=True)
     classes = [c for c in ("RBC", "WBC", "Platelet", "Artefact") if (both["gt"] == c).any()]
     print(
         "Training objects:", both.groupby(["split", "gt"]).size().unstack(fill_value=0).to_string(), sep="\n"

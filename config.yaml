@@ -114,6 +114,7 @@ classifier:
   model_file: models/classifier.joblib
   override_min_proba: 0.8  # ML changes the branch class only when this confident (val end-to-end)
   cv_folds: 5              # GroupKFold on BCCD field groups
+  min_class_examples: 30   # classes with fewer training objects are not learned (Artefact: 7)
   rules:                   # rule baseline (Phase 8): stained & large = WBC, stained & small = platelet
     purple_min: 0.2        # purple_fraction
     wbc_min_area: 1.0      # x pi r^2

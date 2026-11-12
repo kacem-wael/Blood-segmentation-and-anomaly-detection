@@ -1,0 +1,2 @@
+image_id,label,branch,gt,pred,area_rel,purple_fraction,circularity,solidity,xmin,ymin,xmax,ymax
+BloodImage_00125,3,RBC,Platelet,RBC,0.3811370646835185,0.0885304659498208,0.754351189662793,0.9343603482920296,140,1,207,48

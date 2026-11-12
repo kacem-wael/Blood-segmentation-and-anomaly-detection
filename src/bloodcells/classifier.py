@@ -49,7 +49,16 @@ def make_models(seed: int = 42) -> dict:
         ),
         "svm": make_pipeline(
             StandardScaler(),
-            SVC(kernel="rbf", C=3.0, gamma="scale", class_weight="balanced", random_state=seed),
+            # probability=True: every model must give probabilities, or the confidence
+            # gate of ml_predict silently becomes an ungated override.
+            SVC(
+                kernel="rbf",
+                C=3.0,
+                gamma="scale",
+                class_weight="balanced",
+                probability=True,
+                random_state=seed,
+            ),
         ),
         "random_forest": RandomForestClassifier(
             n_estimators=300,
